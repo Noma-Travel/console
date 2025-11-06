@@ -24,10 +24,10 @@ interface Tool {
 
 
 
-// Import tool components dynamically
+// Import extension UI components dynamically
 const importTool = (tool: string) => {
     return lazy(() => 
-        import(`@plugins/${tool}-ui/${tool}.tsx`)
+        import(`@extensions/${tool}/ui/${tool}.tsx`)
             .catch(() => {
                 // Return a simple component if import fails
                 return {

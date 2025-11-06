@@ -6,7 +6,7 @@ module.exports = {
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
-	'../console-plugins-local/**/*.{js,jsx,ts,tsx}',
+	'../extensions/**/ui/**/*.{js,jsx,ts,tsx}',
   ],
   prefix: "",
   theme: {

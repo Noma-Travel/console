@@ -5,7 +5,7 @@ import { WindowSizeProvider } from '@/contexts/WindowSizeContext';
 
 const importToolSheetNav = (tool: string) => {
     return lazy(() => 
-        import(`@plugins/${tool}-ui/navigation/${tool}_sheetnav.tsx`)
+        import(`@extensions/${tool}/ui/navigation/${tool}_sheetnav.tsx`)
             .catch(() => {
                 // Return a simple component if import fails
                 return {

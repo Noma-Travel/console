@@ -3,7 +3,7 @@ import { GlobalContext } from "@/components/tank/global-context"
 
 const importOnboarding = (plugin: string) => {
     return lazy(() => 
-        import(`@plugins/${plugin}-ui/onboarding/${plugin}_onboarding.tsx`)
+        import(`@extensions/${plugin}/ui/onboarding/${plugin}_onboarding.tsx`)
             .catch(() => {
                 console.log(`${plugin} :Not found`)
                 return {
