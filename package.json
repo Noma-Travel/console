@@ -12,8 +12,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "start-api": "cd ../tank && venv/bin/flask run --no-debugger"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.627.0",

@@ -6,30 +6,30 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import Root from '@/components/tank/root'
+import Root from '@/components/console/root'
 
 import ErrorPage from './error-page.tsx'
 
-import {GlobalProvider} from "@/components/tank/global-context"
-import AuthLogin from "@/components/tank/authLogin"
-import AuthRegister from '@/components/tank/authRegister';
-import AuthConfirm from "@/components/tank/authConfirm"
-import AuthInvite from "@/components/tank/authInvite"
-import Account from "@/components/tank/account"
-import ForgotPassword from '@/components/tank/authForgotPassword.tsx';
-import ResetPassword from '@/components/tank/authResetPassword.tsx';
+import {GlobalProvider} from "@/components/console/global-context"
+import AuthLogin from "@/components/console/authLogin"
+import AuthRegister from '@/components/console/authRegister';
+import AuthConfirm from "@/components/console/authConfirm"
+import AuthInvite from "@/components/console/authInvite"
+import Account from "@/components/console/account"
+import ForgotPassword from '@/components/console/authForgotPassword.tsx';
+import ResetPassword from '@/components/console/authResetPassword.tsx';
 
 import Landing from './landing/Landing.tsx';
 
 import ToolRouter from "@/router.tsx"
 
-import AppSettings from "@/components/tank/app_settings"
-import SettingsTeams from "@/components/tank/settings-teams"
-import SettingsTools from "@/components/tank/settings-tools"
-import SettingsOrgs from "@/components/tank/settings-orgs"
-import SettingsHome from "@/components/tank/settings-home"
-import UserHome from "@/components/tank/user-home"
-import Token from "@/components/tank/token"
+import AppSettings from "@/components/console/app_settings"
+import SettingsTeams from "@/components/console/settings-teams"
+import SettingsTools from "@/components/console/settings-tools"
+import SettingsOrgs from "@/components/console/settings-orgs"
+import SettingsHome from "@/components/console/settings-home"
+import UserHome from "@/components/console/user-home"
+import Token from "@/components/console/token"
 
 import './index.css'
 

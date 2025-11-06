@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd());
 
   const apiUrl = `${env.VITE_API_URL ?? ''}`;
-  const isDevMode = env.VITE_DEV_MODE === 'true';
+  const isDevMode = mode === 'development' || env.VITE_DEV_MODE === 'true';
 
   return {
     base: '/',
@@ -31,6 +31,7 @@ export default defineConfig(({ mode }) => {
         'react',
         'react-dom',
         'react-day-picker',
+        'date-fns',
         'lucide-react',
         '@radix-ui/react-accordion',
         '@radix-ui/react-alert-dialog',
@@ -98,6 +99,7 @@ export default defineConfig(({ mode }) => {
     optimizeDeps: {
       include: [
         'react-router-dom',
+        'date-fns',
       // Dynamically include extensions based on mode
       ...(isDevMode ? ['../extensions/**/ui/**/*.tsx'] : []),
     ],

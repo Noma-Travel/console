@@ -1,0 +1,91 @@
+import WebSocketButton from "@/components/console/websocket-button"
+import ChatButton from "@/components/console/chat-button"
+import GupshupButton from "@/components/console/gupshup-button"
+import { TextareaBadges } from "@/components/ui/textareabadges"
+import { useState} from 'react';
+
+
+interface InputProps {
+    messageUp: (message: string, payload?: any) => void;
+    payload?: any;
+    captions?: Record<string, string>;
+}
+
+export default function ChatInput({messageUp,payload = {},captions = {}}: InputProps) {
+
+
+    const [unsentMessage, setUnsentMessage] = useState('');
+    const [shouldSend, setShouldSend] = useState(false);
+
+
+    const messageReset = (m: boolean) => {
+        if(m){
+            setUnsentMessage('');
+        }     
+    };
+
+    return (
+
+        <div className="mt-auto bg-background pt-2 flex flex-row gap-1 relative z-30">
+            
+            <TextareaBadges 
+                placeholder= {captions['hint']} 
+                value={unsentMessage}
+                onChange={(e) => setUnsentMessage(e.target.value)}
+                context={{
+                    portfolio: captions['portfolio_name'],
+                    org: captions['org_name'],
+                    section: captions['section_name'],
+                    thread: captions['activeThread']
+                }}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      setShouldSend(prev => !prev);
+                    }
+                  }}
+            /> 
+         
+            <WebSocketButton
+                messageUp={messageUp}
+                messageReset={messageReset}
+                message={unsentMessage}
+                payload={payload}
+                trigger={shouldSend}
+            />
+            <span className="">
+                <ChatButton
+                    path={`${import.meta.env.VITE_API_URL}/_chat/tb`}
+                    method='POST'
+                    messageUp={messageUp}
+                    messageReset={messageReset}
+                    message={unsentMessage}
+                    payload={payload}
+                />
+            </span>
+            {payload['org'] === '_all' && (
+                <span className="">
+                    <GupshupButton
+                        path={`${import.meta.env.VITE_API_URL}/_chat/gs_in/${payload['portfolio']}/${payload['tool']}`}
+                        method='POST'
+                        messageUp={messageUp}
+                        messageReset={messageReset}
+                        message={unsentMessage}
+                        payload={payload}
+                    />
+                </span>
+            )}
+            
+            
+        </div>
+        
+    )
+}
+
+
+
+
+
+
+
+            

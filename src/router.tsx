@@ -1,6 +1,6 @@
 import { lazy, Suspense, useContext } from 'react';
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import { GlobalContext } from "@/components/tank/global-context";
+import { GlobalContext } from "@/components/console/global-context";
 
 
 interface Portfolio {
