@@ -18,11 +18,11 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
-        // Support both local plugins and npm packages
+        // Support both local extensions and npm packages
         ...(isDevMode ? {
-          '@plugins': path.resolve(__dirname, '../console-plugins-local')
+          '@extensions': path.resolve(__dirname, '../extensions')
         } : {}),
-        // npm packages will use their natural resolution from node_modules/@console-plugins/*
+        // npm packages will use their natural resolution from node_modules/@extensions/*
       },
       // Preserve symlinks for workspace packages
       preserveSymlinks: true,
@@ -88,7 +88,7 @@ export default defineConfig(({ mode }) => {
       },
       fs: {
         // Allow serving files from one level up to the project root
-        allow: ['..', '../console-plugins-local', '../console-plugins-local/*'],
+        allow: ['..', '../extensions', '../extensions/*', '../extensions/*/ui'],
         strict: false
       },
     },
@@ -98,23 +98,23 @@ export default defineConfig(({ mode }) => {
     optimizeDeps: {
       include: [
         'react-router-dom',
-      // Dynamically include plugins based on mode
-      ...(isDevMode ? ['../console-plugins-local/**/*.tsx'] : []),
+      // Dynamically include extensions based on mode
+      ...(isDevMode ? ['../extensions/**/ui/**/*.tsx'] : []),
     ],
-    // Exclude npm plugin packages from optimization in production
-    exclude: isDevMode ? [] : ['@console-plugins/*'],
+    // Exclude npm extension packages from optimization in production
+    exclude: isDevMode ? [] : ['@extensions/*'],
     // Force include workspace dependencies
       entries: [
         './src/**/*.tsx',
         './src/**/*.ts',
-        ...(isDevMode ? ['../console-plugins-local/**/*.tsx'] : []),
+        ...(isDevMode ? ['../extensions/**/ui/**/*.tsx'] : []),
       ],
     },
     build: {
     commonjsOptions: {
       include: [
         /node_modules/,
-        ...(isDevMode ? [/\/console-plugins-local\//] : [/@console-plugins/]),
+        ...(isDevMode ? [/\/extensions\//] : [/@extensions/]),
       ],
     },
       rollupOptions: {
@@ -122,11 +122,11 @@ export default defineConfig(({ mode }) => {
       // Ensure dynamic imports work correctly
       output: {
         manualChunks: (id) => {
-          // Group all plugin packages into separate chunks
-          if (id.includes('@console-plugins')) {
-            const pluginMatch = id.match(/@console-plugins\/([^/]+)/);
-            if (pluginMatch) {
-              return `plugin-${pluginMatch[1]}`;
+          // Group all extension packages into separate chunks
+          if (id.includes('@extensions')) {
+            const extensionMatch = id.match(/@extensions\/([^/]+)/);
+            if (extensionMatch) {
+              return `extension-${extensionMatch[1]}`;
             }
           }
         }

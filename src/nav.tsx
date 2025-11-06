@@ -1,10 +1,10 @@
 import { lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const importToolNav = (tool: string) => {
+const importNav = (tool: string) => {
     // Use relative path from the current directory
     return lazy(() => 
-      import(`@plugins/${tool}-ui/navigation/${tool}_sidenav.tsx`)
+      import(`@extensions/${tool}/ui/navigation/${tool}_sidenav.tsx`)
           .catch((error) => {
               console.log(`${tool} :E `, error);
               // Return a simple component if import fails
@@ -30,14 +30,13 @@ export default function SideNav({portfolio, org, tool, section}: SideNavProps) {
         return null;
     }
 
-    console.log('Tools')
 
     const handleNavigation = (path: string) => {
         navigate(path);
       };
 
     // Dynamically load the tool component
-    const ToolNavComponent = importToolNav(tool);
+    const ToolNavComponent = importNav(tool);
        
     return (
         <Suspense fallback={<div></div>}>          

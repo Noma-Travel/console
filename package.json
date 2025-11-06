@@ -6,7 +6,7 @@
   "type": "module",
   "workspaces": [
     ".",
-    "../console-plugins-local/*"
+    "../extensions/*/ui"
   ],
   "scripts": {
     "dev": "vite",
