@@ -3,7 +3,7 @@
 interface ImportMetaEnv {
   readonly VITE_API_URL: string
   readonly VITE_DEV_MODE: string
-  readonly VITE_BOOTSTRAP_PLUGINS: string
+  readonly VITE_BOOTSTRAP_EXTENSIONS: string
 }
 
 interface ImportMeta {

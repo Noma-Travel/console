@@ -21,7 +21,7 @@ export default function Onboarding() {
     const { tree } = context;
 
     // Get bootstrap plugins from environment variable
-    const bootstrapPluginsEnv = import.meta.env.VITE_BOOTSTRAP_PLUGINS || '';
+    const bootstrapPluginsEnv = import.meta.env.VITE_BOOTSTRAP_EXTENSIONS || '';
     const bootstrapPlugins = bootstrapPluginsEnv.split(',').map((plugin: string) => plugin.trim()).filter(Boolean);
     
     const bootstrapComponents: React.ComponentType<{ tree: any }>[] = [];
