@@ -27,7 +27,6 @@ dist-ssr
 *.env
 .env.development
 .env.production
-extensions.local.ts
 
 *.tsbuildinfo
 tsconfig.app.tsbuildinfo
