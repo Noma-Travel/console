@@ -4,10 +4,6 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "workspaces": [
-    ".",
-    "../extensions/*/ui"
-  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

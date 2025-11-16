@@ -4,6 +4,14 @@ import { fileURLToPath } from 'url'
 import path from 'path';
 
 
+// Try to load local extension aliases if the file exists
+let extensionAliases = {};
+try {
+  extensionAliases = (await import("./extensions.local")).extensionAliases;
+} catch {
+  // no local extensions configured
+}
+
 
 
 export default defineConfig(({ mode }) => {
@@ -18,11 +26,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
-        // Support both local extensions and npm packages
-        ...(isDevMode ? {
-          '@extensions': path.resolve(__dirname, '../extensions')
-        } : {}),
-        // npm packages will use their natural resolution from node_modules/@extensions/*
+        ...extensionAliases,
       },
       // Preserve symlinks for workspace packages
       preserveSymlinks: true,

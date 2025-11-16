@@ -7,6 +7,7 @@ module.exports = {
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
 	'../extensions/**/ui/**/*.{js,jsx,ts,tsx}',
+	'!../extensions/**/node_modules/**',
   ],
   prefix: "",
   theme: {

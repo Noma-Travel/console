@@ -49,11 +49,11 @@ npm install
 ```bash
 VITE_API_URL='http://127.0.0.1:5001'
 VITE_DEV_MODE=true
-VITE_BOOTSTRAP_EXTENSIONS=data,schd,extension_x
+VITE_EXTENSIONS=data,schd,extension_x
 
 ```
 
-The `VITE_BOOTSTRAP_EXTENSIONS` variable defines which extensions to load on startup (comma-separated list). Your extension should be listed in that variable
+The `VITE_EXTENSIONS` variable defines which extensions to load on startup (comma-separated list). Your extension should be listed in that variable
 
 ### Step 5: Start Environment
 
@@ -137,7 +137,7 @@ EOF
 
 # 5. Add to bootstrap extensions (optional, only if you want it to load on startup)
 cd ../../console
-# Edit .env.development and add extension to VITE_BOOTSTRAP_EXTENSIONS: "schd,enerclave,my-new-tool"
+# Edit .env.development and add extension to VITE_EXTENSIONS: "schd,enerclave,my-new-tool"
 
 # 6. Install (workspace auto-discovers)
 npm install
@@ -159,7 +159,7 @@ cd some-extension
 
 # 3. Add to bootstrap extensions (optional)
 cd ../../console
-# Edit .env.development and add extension to VITE_BOOTSTRAP_EXTENSIONS if needed
+# Edit .env.development and add extension to VITE_EXTENSIONS if needed
 
 # 4. Install
 npm install
@@ -176,7 +176,7 @@ cd console
 npm install @extensions/some-extension@1.0.0
 
 # Add to bootstrap extensions (optional)
-# Edit .env.production and add extension to VITE_BOOTSTRAP_EXTENSIONS if needed
+# Edit .env.production and add extension to VITE_EXTENSIONS if needed
 
 # Set production mode
 echo "VITE_DEV_MODE=false" > .env.local
