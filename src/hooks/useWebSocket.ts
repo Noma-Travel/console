@@ -85,6 +85,8 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       console.log('Message out:', message);
 
+      const core = 'core' in payload ? payload.core : 'default';
+
       const ws_payload = {
         action: payload.action,
         data: message,
@@ -93,6 +95,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
         entity_id: payload.entity_id,
         thread: payload.thread,
         portfolio: payload.portfolio,
+        core: core,
         org: payload.org
       };
 
