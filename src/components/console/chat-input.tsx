@@ -36,7 +36,8 @@ export default function ChatInput({messageUp,payload = {},captions = {}}: InputP
                     portfolio: captions['portfolio_name'],
                     org: captions['org_name'],
                     section: captions['section_name'],
-                    thread: captions['activeThread']
+                    thread: captions['activeThread'],
+                    next: captions['next'],
                 }}
                 onKeyDown={(e) => {
                     if (e.key === 'Enter') {
