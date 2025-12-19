@@ -238,14 +238,14 @@ export default function ItemPreview({selectedId,refreshUp,onDeleteId,blueprint,p
           <div className={`grid gap-3  ${(!selectedId || !showCard) ? 'hidden' : ''}`}>
             <div className="font-semibold">Item Details</div>
             <ul className="grid gap-3">
-            {Object.entries(data).map(([key, value]) => (
-
-                fieldsDictionary[key]?.widget !== 'image' && !key.startsWith('_') ? (
+            {Object.entries(fieldsDictionary).map(([key, fieldInfo]) => {
+                const value = data[key];
+                return fieldInfo?.widget !== 'image' && !key.startsWith('_') ? (
                     <li 
                         key={key}
                         className="group flex items-center justify-between">
                         <span className="text-muted-foreground">
-                            {key}:
+                            {fieldInfo?.label}:
                         </span>
                         <span className="flex items-center gap-1">
                             <span className="h-5 w-5">
@@ -260,14 +260,12 @@ export default function ItemPreview({selectedId,refreshUp,onDeleteId,blueprint,p
                                   method='PUT'   
                               />
                             </span>  
-                            <span>{typeof value === 'object' && value !== null ? JSON.stringify(value) : blueprint?.rich?.[blueprint.sources?.[key]?.split(':')[0]]?.[value] ?? value}</span>
+                            <span>{value === undefined ? '—' : typeof value === 'object' && value !== null ? JSON.stringify(value) : blueprint?.rich?.[blueprint.sources?.[key]?.split(':')[0]]?.[value] ?? value}</span>
                             
                         </span> 
                     </li>
-                ) : null
-
-
-            ))}
+                ) : null;
+            })}
             </ul>
           </div>   
         </CardContent>
