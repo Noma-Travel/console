@@ -54,9 +54,7 @@ export default function ChatWidgetPlanPreview({ item }: PlanPreviewProps) {
 
   if (!actualPlan || !actualPlan.steps || actualPlan.steps.length === 0) {
     return (
-      <div className="w-[80%] mx-auto p-6 rounded-lg border bg-card">
-        <p className="text-sm text-muted-foreground">No plan steps available</p>
-      </div>
+      <></>
     )
   }
 

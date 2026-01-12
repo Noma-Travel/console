@@ -7,6 +7,7 @@ interface WebSocketPayload {
   thread?: string;
   portfolio?: string;
   org?: string;
+  next?: string;
 }
 
 interface UseWebSocketOptions {
@@ -95,6 +96,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
         entity_id: payload.entity_id,
         thread: payload.thread,
         portfolio: payload.portfolio,
+        next: payload.next,
         core: core,
         org: payload.org
       };
