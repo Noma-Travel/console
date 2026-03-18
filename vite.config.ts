@@ -27,6 +27,7 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
         ...extensionAliases,
+        'react-syntax-highlighter': fileURLToPath(new URL('./node_modules/react-syntax-highlighter', import.meta.url)),
       },
       // Preserve symlinks for workspace packages
       preserveSymlinks: true,
