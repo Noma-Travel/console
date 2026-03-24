@@ -37,19 +37,24 @@ interface PlanPreviewProps {
   key_id?: string | number
   item: {
     _out: {
-      content: Array<{
-        plan?: Plan | Plan[]
-      }>
+      content?: string | Array<{ plan?: Plan | Plan[] }> | { plan?: Plan | Plan[] }
     }
   }
 }
 
 export default function ChatWidgetPlanPreview({ item }: PlanPreviewProps) {
-  // Extract plan from item._out.content[0].plan
-  const content = item?._out?.content
-  const planData = Array.isArray(content) && content.length > 0 ? content[0]?.plan : null
-
-  // Handle case where plan comes wrapped in an array
+  // Content is handler-defined; may be string (JSON), array, or dict.
+  // Handlers (generate_plan, modify_plan) return { plan, intent } or [{ plan }].
+  let content = item?._out?.content
+  if (typeof content === 'string') {
+    try {
+      content = JSON.parse(content)
+    } catch {
+      content = null
+    }
+  }
+  const first = Array.isArray(content) && content.length > 0 ? content[0] : (content && typeof content === 'object' ? content : null)
+  const planData = first?.plan ?? null
   const actualPlan = Array.isArray(planData) ? planData[0] : planData
 
   if (!actualPlan || !actualPlan.steps || actualPlan.steps.length === 0) {
