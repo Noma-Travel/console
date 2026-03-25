@@ -72,6 +72,7 @@ export default defineConfig(({ mode }) => {
         'next-themes',
         'react-hook-form',
         'react-resizable-panels',
+        'react-syntax-highlighter',
         'recharts',
         'sonner',
         'vaul',
@@ -105,6 +106,8 @@ export default defineConfig(({ mode }) => {
       include: [
         'react-router-dom',
         'date-fns',
+        'react-syntax-highlighter',
+        'react-syntax-highlighter/dist/esm/styles/prism',
       // Dynamically include extensions based on mode
       ...(isDevMode ? ['../extensions/**/ui/**/*.tsx'] : []),
     ],

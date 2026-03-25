@@ -31,9 +31,10 @@ interface FieldDefinition {
     type: 'string' | 'number' | 'timestamp'; // Added 'timestamp'
     label: string;
     required: boolean;
-    widget: 'text' | 'date' |'number' | 'select' | 'image'; // Add more widget types as necessary
+    widget: 'text' | 'date' |'number' | 'select' | 'image' | 'select-cascade'; // Add more widget types as necessary
     hint?: string; // Optional hint for placeholders
-    options?: Record<string, string>; // Key-value pairs for select options
+    options?: Record<string, string> | Record<string, Record<string, string>>; // select: key-value; select-cascade: outerKey -> key-value
+    source?: string; // select-cascade: name of field to watch for outer key
     [key: string]: any; // Additional properties
 }
 
@@ -52,7 +53,7 @@ interface FormField {
 
 
 function generateSchema(fieldArray: FieldDefinition[]): z.ZodObject<any> {
-  const formSchemaFields = fieldArray.reduce((schema, field) => {
+  const formSchemaFields = fieldArray.reduce<Record<string, z.ZodTypeAny>>((schema, field) => {
     let validation: z.ZodTypeAny = z.string();
     if (field.type === "number") {
       validation = z.number();
@@ -79,6 +80,13 @@ interface FieldOption {
   [key: string]: string;
 }
 
+function isCascadeOptions(opts: Record<string, string> | Record<string, Record<string, string>>): opts is Record<string, Record<string, string>> {
+  if (!opts || typeof opts !== 'object') return false;
+  const firstKey = Object.keys(opts)[0];
+  if (firstKey === undefined) return false;
+  return typeof opts[firstKey] === 'object' && opts[firstKey] !== null && !Array.isArray(opts[firstKey]);
+}
+
 interface Field {
   cardinality: string;
   default: string;
@@ -94,7 +102,7 @@ interface Field {
   source: string;
   type: string;
   widget: string;
-  options?: FieldOption; // Optional since only some fields contain this
+  options?: FieldOption | Record<string, Record<string, string>>; // select: FieldOption; select-cascade: dict of dicts
 }
 
 interface Blueprint {
@@ -159,7 +167,7 @@ export default function FormPost({ refreshUp, blueprint, path, method }: FormPos
   
     
   // Function to render the form field based on the field's widget type
-  function renderFormField(field: FieldDefinition, formField: FormField, Rich: RichDefinition) {
+  function renderFormField(field: FieldDefinition, formField: FormField, Rich: RichDefinition, form: { watch: (name: string) => unknown }) {
 
 
   
@@ -191,7 +199,7 @@ export default function FormPost({ refreshUp, blueprint, path, method }: FormPos
   
               <SelectContent>
           
-                {field.options ? (
+                {field.options && !isCascadeOptions(field.options) ? (
                   // If field.options exist, map over the options and display SelectItem components
                   Object.entries(field.options).map(([value, label]) => (
                     <SelectItem key={value} value={value.includes(':') ? value.split(':')[1] : value}>
@@ -201,10 +209,9 @@ export default function FormPost({ refreshUp, blueprint, path, method }: FormPos
                 ) : (
                   // Else, check if field.rich[field.source.split(':')[1]] exists
                   
-                  Rich[field.source.split(':')[0]] ? (
+                  Rich[(field.source ?? '').split(':')[0]] ? (
                     <>
-                      {console.log('RichRich:',Rich[field.source.split(':')[0]])}
-                      {Object.entries(Rich[field.source.split(':')[0]]).map(([value, label]) => (
+                      {Object.entries(Rich[(field.source ?? '').split(':')[0]]).map(([value, label]) => (
                         <SelectItem key={value} value={value}>
                           {label}
                         </SelectItem>
@@ -223,6 +230,36 @@ export default function FormPost({ refreshUp, blueprint, path, method }: FormPos
   
             </Select>
           );
+
+        case "select-cascade": {
+          const sourceName = field.source ?? '';
+          const sourceValue = form.watch(sourceName) as string | undefined;
+          const cascadeOptions = field.options as Record<string, Record<string, string>> | undefined;
+          const innerOptions: Record<string, string> = (sourceValue && cascadeOptions && cascadeOptions[sourceValue])
+            ? cascadeOptions[sourceValue]
+            : {};
+          const placeholder = !sourceValue
+            ? `Select ${sourceName} first`
+            : (field.hint ?? 'Select...');
+          return (
+            <Select
+              onValueChange={formField.onChange}
+              value={innerOptions[formField.value as string] !== undefined ? formField.value : ''}
+              disabled={Object.keys(innerOptions).length === 0}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={placeholder} />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(innerOptions).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          );
+        }
 
         case "image":
 
@@ -257,7 +294,7 @@ export default function FormPost({ refreshUp, blueprint, path, method }: FormPos
               .map(field => ({
                 ...field,
                 type: field.type as "string" | "number" | "timestamp",
-                widget: field.widget as "number" | "date" | "select" | "text" | "image",  // Ensure widget is casted to allowed values
+                widget: field.widget as "number" | "date" | "select" | "text" | "image" | "select-cascade",
               }))
           );
 
@@ -283,6 +320,18 @@ export default function FormPost({ refreshUp, blueprint, path, method }: FormPos
   const form = useForm<z.infer<typeof FormSchema>>({
       resolver: zodResolver(FormSchema)
   });
+
+  const formValues = form.watch();
+  useEffect(() => {
+    Fields.filter(f => f.widget === 'select-cascade' && f.source).forEach(f => {
+      const srcVal = formValues[f.source as string];
+      const inner = (f.options as Record<string, Record<string, string>>)?.[srcVal as string];
+      const currentVal = formValues[f.name];
+      if (currentVal && inner && !(currentVal in inner)) {
+        form.setValue(f.name, '');
+      }
+    });
+  }, [formValues, Fields, form]);
 
 
   // Toast
@@ -416,7 +465,7 @@ export default function FormPost({ refreshUp, blueprint, path, method }: FormPos
               render={({ field: formField }) => (
               <FormItem className="px-1">
                   <FormLabel>{field.label}{field.required ? '*' : ''}</FormLabel>
-                  <FormControl>{renderFormField(field, formField, Rich)}</FormControl>
+                  <FormControl>{renderFormField(field, formField, Rich, form)}</FormControl>
                   <FormDescription>{/*<span className='text-xs'>{field.hint}</span>*/}</FormDescription>
                   <FormMessage />
               </FormItem>
