@@ -17,7 +17,13 @@ try {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd());
 
-  const apiUrl = `${env.VITE_API_URL ?? ''}`;
+  // In dev, set VITE_API_URL=/api so the browser calls same-origin URLs and avoids API Gateway
+  // CORS (prod only allows e.g. https://app.travelwithnoma.com). The proxy forwards /api/* to
+  // VITE_API_PROXY_TARGET (full HTTPS API base) or, if unset, a full http(s) VITE_API_URL.
+  const rawApi = env.VITE_API_URL ?? '';
+  const proxyTarget =
+    (env.VITE_API_PROXY_TARGET as string | undefined)?.trim() ||
+    (rawApi.startsWith('http') ? rawApi : '');
   const isDevMode = mode === 'development' || env.VITE_DEV_MODE === 'true';
 
   return {
@@ -80,11 +86,11 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       proxy: {
-        // Proxy API requests to the Flask server
         '/api': {
-          target: apiUrl,
+          target: proxyTarget || 'http://127.0.0.1:5001',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/,'/' ),
+          secure: true,
+          rewrite: (path) => path.replace(/^\/api/, ''),
         },
       },
       host: '127.0.0.1',

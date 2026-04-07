@@ -18,7 +18,7 @@ const importToolSheetNav = (tool: string) => {
 interface SheetNavProps {
     portfolio: string;
     org: string;
-    tool: string;
+    tool?: string;
     section: string;
 }
 
@@ -26,7 +26,7 @@ export default function SheetNav({portfolio, org, tool, section}: SheetNavProps)
     
     const navigate = useNavigate();
 
-    if (!tool) {
+    if (!tool || tool === 'undefined') {
         return null;
     }
 
