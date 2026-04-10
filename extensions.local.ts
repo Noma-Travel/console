@@ -12,7 +12,7 @@ const env = loadEnv(mode, __dirname, "");
 // Get bootstrap extensions from environment
 const bootstrapExtensions = 
   env.VITE_EXTENSIONS || 
-  "data,schd,noma"; // fallback default
+  "data,schd,backend"; // fallback when .env omit (UI extension folder is `backend`)
 
 // Parse the extensions list
 const extensions = bootstrapExtensions
