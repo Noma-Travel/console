@@ -3,6 +3,7 @@ import {
   Search,
   Settings,
   ArrowBigLeft,
+  ReceiptText,
 } from "lucide-react"
 
 import {
@@ -164,35 +165,49 @@ export default function Root() {
             section={section ?? ''}
          />
 
-        <nav 
-          className={
-            location.pathname.split('/')[2]
-              ? 'mt-auto flex flex-col items-center gap-4 px-2 sm:py-5'
-              : 'hidden'
-          }
-        >
-
+        <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
           <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
                   <NavLink
-                      to={`/${portfolio}/settings`}
+                      to={`/admin`}
                       className={
-                        location.pathname.split('/')[2] === 'settings'
+                        location.pathname === '/admin'
                           ? 'group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-gray-200 text-lg font-semibold text-muted-foreground md:h-12 md:w-12 md:text-base'
                           : 'flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8'
                       }
                   >
-                      <Settings className="h-5 w-5" />
-                      <span className="sr-only">Settings</span>
+                      <ReceiptText className="h-5 w-5" />
+                      <span className="sr-only">Admin</span>
                   </NavLink>
                 </TooltipTrigger>
-                <TooltipContent side="right">Settings</TooltipContent>
+                <TooltipContent side="right">Admin</TooltipContent>
             </Tooltip>
           </TooltipProvider>
+
+          {location.pathname.split('/')[2] && (
+            <TooltipProvider>
+              <Tooltip>
+                  <TooltipTrigger asChild>
+                    <NavLink
+                        to={`/${portfolio}/settings`}
+                        className={
+                          location.pathname.split('/')[2] === 'settings'
+                            ? 'group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-gray-200 text-lg font-semibold text-muted-foreground md:h-12 md:w-12 md:text-base'
+                            : 'flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8'
+                        }
+                    >
+                        <Settings className="h-5 w-5" />
+                        <span className="sr-only">Settings</span>
+                    </NavLink>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Settings</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </nav>
       </aside>
-      <div className="flex flex-col sm:gap-1 sm:py-1 sm:pl-14">
+      <div className="flex flex-col sm:gap-1 sm:py-1 sm:pl-14 min-h-0 flex-1">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           
           <SheetNav

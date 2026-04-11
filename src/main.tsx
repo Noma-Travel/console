@@ -29,6 +29,7 @@ import SettingsTools from "@/components/console/settings-tools"
 import SettingsOrgs from "@/components/console/settings-orgs"
 import SettingsHome from "@/components/console/settings-home"
 import UserHome from "@/components/console/user-home"
+import AdminInvoices from "@/components/console/admin-invoices"
 import Token from "@/components/console/token"
 
 import './index.css'
@@ -52,6 +53,7 @@ createRoot(document.getElementById('root')!).render(
           >
             <Route path="/home" element={isAuthenticated() ? <UserHome /> : <Navigate replace to="/login" />} />
             <Route path="/account" element={isAuthenticated() ? <Account /> : <Navigate replace to="/login" />} />
+            <Route path="/admin" element={isAuthenticated() ? <AdminInvoices /> : <Navigate replace to="/login" />} />
             <Route path=":portfolio/settings" element={isAuthenticated() ? <AppSettings /> : <Navigate replace to="/login" />}>
               <Route index element={<SettingsTools />} />
               <Route path="teams" element={<SettingsTeams />} />
