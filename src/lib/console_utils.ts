@@ -9,7 +9,10 @@ interface Field {
     hint: string;
     id: string;
     label: string;
-    layer: number;
+    /** Depth / visibility tier; 0 = list + primary UI. API may send string. */
+    layer?: number | string;
+    /** Some blueprints use `level` instead of `layer` (same meaning). */
+    level?: number | string;
     multilingual: boolean;
     order: number;
     required: boolean;
@@ -17,13 +20,77 @@ interface Field {
     source: string;
   }
 
+/** Numeric tier for list/detail visibility: table shows fields with tier ≤ 0. */
+export function fieldLayer(field: { layer?: unknown; level?: unknown }): number {
+    const raw = field.layer ?? field.level;
+    if (raw === undefined || raw === null || raw === "") return 0;
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : 0;
+}
+
+export function isBlueprintTableField(field: { layer?: unknown; level?: unknown }): boolean {
+    return fieldLayer(field) <= 0;
+}
+
 // Declare the Blueprint interface
 export interface Blueprint {
     label: string;
     fields?: Field[]; // Mark 'fields' as optional
     rich?: { [key: string]: { [key: string]: string } }; // Declare 'rich' as optional with a dynamic structure
     sources?: { [key: string]: string };
+    /** Index key segments; fields listed in `path` are immutable in storage. */
+    indexes?: { path?: string[] };
     [key: string]: any;
+}
+
+/** Field names that participate in `indexes.path` (immutable). */
+export function getBlueprintIndexPathFieldSet(
+    blueprint: Blueprint | null | undefined,
+): Set<string> {
+    const path = blueprint?.indexes?.path;
+    if (!Array.isArray(path)) return new Set();
+    const out = new Set<string>();
+    for (const p of path) {
+        if (typeof p === "string" && p.length > 0) out.add(p);
+    }
+    return out;
+}
+
+export function isBlueprintIndexPathField(
+    blueprint: Blueprint | null | undefined,
+    fieldName: string,
+): boolean {
+    return getBlueprintIndexPathFieldSet(blueprint).has(fieldName);
+}
+
+/** Row header in preview: common keys, then first non-empty list-tier (layer/level ≤ 0) field, else id. */
+export function resolveDocumentTitle(
+    data: Record<string, unknown>,
+    blueprint?: Blueprint | null,
+): string {
+    if (!data || typeof data !== "object") return "";
+    const id = data._id != null ? String(data._id) : "";
+
+    for (const k of ["name", "title", "label", "subject", "headline"]) {
+        const v = data[k];
+        if (v != null && String(v).trim() !== "") return String(v);
+    }
+
+    const fields = blueprint?.fields;
+    if (Array.isArray(fields)) {
+        const ordered = [...fields]
+            .filter((f) => isBlueprintTableField(f))
+            .sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
+        for (const f of ordered) {
+            const v = data[f.name];
+            if (v == null || v === "") continue;
+            if (typeof v === "object") continue;
+            const s = String(v).trim();
+            if (s) return s;
+        }
+    }
+
+    return id || "—";
 }
 
 // Declare the DataItem interface
