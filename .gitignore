@@ -32,9 +32,6 @@ dist-ssr
 tsconfig.app.tsbuildinfo
 tsconfig.node.tsbuildinfo
 
-# Logo
-small_logo.jpg
-large_logo.jpg
 
 # Dev images
 *_dev.jpg
