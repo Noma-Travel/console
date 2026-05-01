@@ -1,6 +1,5 @@
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -14,15 +13,7 @@ import { useParams,useLocation } from 'react-router-dom';
 import { useState, useEffect, useContext } from 'react';
 import { GlobalContext } from "@/components/console/global-context"
 
-import ToolsCard from "@/components/console/tools-card"
-import DialogPost from "@/components/console/dialog-post"
-
-
-interface Blueprint {
-  label: string;
-  // Add other properties as needed
-  [key: string]: any; // This allows for additional dynamic properties if necessary
-}
+import ExtensionsCard from "@/components/console/extensions-card"
 
 interface Tool {
   tool_id: string;
@@ -64,7 +55,6 @@ export default function SettingsExtensions() {
   //const p_setting = location.pathname.split('/')[3]
 
 
-  const [blueprint, setBlueprint] = useState<Blueprint>({ label: '' });
   const [refresh, setRefresh] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -84,7 +74,7 @@ export default function SettingsExtensions() {
             },
           });
           const blueprintData = await blueprintResponse.json();
-          setBlueprint(blueprintData);
+          console.log(blueprintData);
           setRefresh((prev: boolean) => !prev); 
           console.log(refresh)
 
@@ -105,12 +95,6 @@ export default function SettingsExtensions() {
       fetchBlueprint();
   }, [ring]);
 
-
-  // Function to update the state
-  const refreshAction = () => {
-    setRefresh(prev => !prev); // Toggle the `refresh` state to trigger useEffect
-    
-  };
 
   const refreshTree = async () => {
     try {
@@ -133,27 +117,17 @@ export default function SettingsExtensions() {
               <CardHeader>
                 <CardTitle>Extensions</CardTitle>
                 <CardDescription>
-                An extension provides new functionality to your organization
+                List of active extensions in this portfolio:
               </CardDescription>
-              </CardHeader>
-              <CardContent className="hidden">
-                <DialogPost
-                            refreshUp={refreshAction}
-                            blueprint={blueprint}
-                            title={`Activate an extension in this portfolio`}
-                            instructions="Indicate the id of the extension to install. It must be valid."
-                            path={`${import.meta.env.VITE_API_URL}/_auth/portfolios/${p_portfolio}/tools`}
-                            method='POST'
-                />
-              </CardContent>  
+              </CardHeader> 
             </Card>
             <div className="grid gap-4 grid-cols-1">
             {
               (tree?.portfolios[p_portfolio]?.tools && Object.keys(tree?.portfolios[p_portfolio]?.tools).length > 0) ? (
                 Object.values(tree?.portfolios[p_portfolio]?.tools as Record<string, Tool>).map((row: Tool) => (
-                  <ToolsCard
+                  <ExtensionsCard
                     key={row.tool_id}
-                    tooldoc={row}
+                    extensiondoc={row}
                     teamsdict={tree?.portfolios[p_portfolio]?.teams}
                     orgsdict={tree?.portfolios[p_portfolio]?.orgs}
                     portfolioid={p_portfolio}
