@@ -303,7 +303,7 @@ export default function Root() {
                     >
                       <div 
                         className="flex items-center gap-2 flex-row"
-                        onClick={() => handleClick(`/${row['portfolio_id']}/settings/tools`)}
+                        onClick={() => handleClick(`/${row['portfolio_id']}/settings/extensions`)}
                       >
                         <Avatarsq>
                           <AvatarsqImage src='' />
@@ -333,6 +333,12 @@ export default function Root() {
               <DropdownMenuItem key="settings" className="">
                 <NavLink to={`/account`} >
                   Account settings
+                </NavLink>
+              </DropdownMenuItem>
+
+              <DropdownMenuItem key="extensions">
+                <NavLink to={`/extensions`}>
+                  Extensions
                 </NavLink>
               </DropdownMenuItem>
 

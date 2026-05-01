@@ -70,13 +70,13 @@ export default function AppSettings() {
               } 
             >Teams</Link>
             <Link 
-              to={`/${p_portfolio}/settings/tools`}
+              to={`/${p_portfolio}/settings/extensions`}
               className={
-                p_setting === 'tools'
+                p_setting === 'extensions' || p_setting === 'tools'
                   ? "font-semibold text-primary"  // Active state
                   : ""
               } 
-            >Tools</Link>
+            >Extensions</Link>
             
             
           </nav>
