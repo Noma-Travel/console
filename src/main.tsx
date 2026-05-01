@@ -16,6 +16,7 @@ import AuthRegister from '@/components/console/authRegister';
 import AuthConfirm from "@/components/console/authConfirm"
 import AuthInvite from "@/components/console/authInvite"
 import Account from "@/components/console/account"
+import Extensions from "@/components/console/extensions"
 import ForgotPassword from '@/components/console/authForgotPassword.tsx';
 import ResetPassword from '@/components/console/authResetPassword.tsx';
 
@@ -25,7 +26,7 @@ import ToolRouter from "@/router.tsx"
 
 import AppSettings from "@/components/console/app_settings"
 import SettingsTeams from "@/components/console/settings-teams"
-import SettingsTools from "@/components/console/settings-tools"
+import SettingsExtensions from "@/components/console/settings-extensions"
 import SettingsOrgs from "@/components/console/settings-orgs"
 import SettingsHome from "@/components/console/settings-home"
 import UserHome from "@/components/console/user-home"
@@ -52,11 +53,13 @@ createRoot(document.getElementById('root')!).render(
           >
             <Route path="/home" element={isAuthenticated() ? <UserHome /> : <Navigate replace to="/login" />} />
             <Route path="/account" element={isAuthenticated() ? <Account /> : <Navigate replace to="/login" />} />
+            <Route path="/extensions" element={isAuthenticated() ? <Extensions /> : <Navigate replace to="/login" />} />
             <Route path=":portfolio/settings" element={isAuthenticated() ? <AppSettings /> : <Navigate replace to="/login" />}>
-              <Route index element={<SettingsTools />} />
+              <Route index element={<SettingsExtensions />} />
               <Route path="teams" element={<SettingsTeams />} />
               <Route path="orgs" element={<SettingsOrgs />} />
-              <Route path="tools" element={<SettingsTools />} />
+              <Route path="tools" element={<SettingsExtensions />} />
+              <Route path="extensions" element={<SettingsExtensions />} />
               <Route path="portfolios" element={<SettingsHome />} />
             </Route>
             <Route path=":portfolio/:org/:tool" element={isAuthenticated() ? <ToolRouter /> : <Navigate replace to="/login" />} />
