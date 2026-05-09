@@ -30,6 +30,7 @@ import SettingsExtensions from "@/components/console/settings-extensions"
 import SettingsOrgs from "@/components/console/settings-orgs"
 import SettingsHome from "@/components/console/settings-home"
 import UserHome from "@/components/console/user-home"
+import AdminInvoices from "@/components/console/admin-invoices"
 import Token from "@/components/console/token"
 
 import './index.css'

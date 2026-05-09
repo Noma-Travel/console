@@ -26,7 +26,7 @@ export default function SideNav({portfolio, org, tool, section}: SideNavProps) {
     
     const navigate = useNavigate();
     
-    if (!tool) {
+    if (!tool || tool === 'undefined') {
         return null;
     }
 

@@ -55,7 +55,10 @@ export default function SettingsTools() {
   if (!context) {
     throw new Error('No GlobalProvider');
   }
-  const { tree } = context as unknown as { tree: { portfolios: Record<string, Portfolio> } };
+  const { tree, loadTree } = context as unknown as {
+    tree: { portfolios: Record<string, Portfolio> };
+    loadTree: () => Promise<void>;
+  };
   console.log(tree);
 
 
@@ -114,14 +117,15 @@ export default function SettingsTools() {
 
   const refreshTree = async () => {
     try {
-      // Fetch Blueprint
-      await fetch(`${import.meta.env.VITE_API_URL}/_auth/tree/refresh`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/_auth/tree/refresh`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${sessionStorage.accessToken}`,
         },
       });
-  
+      if (res.ok) {
+        await loadTree();
+      }
     } catch (err) { 
       console.log(err); // Log the error directly
     }
@@ -164,7 +168,7 @@ export default function SettingsTools() {
               )
             }
             </div>
-            <button onClick={refreshTree} className="flex items-center">
+            <button type="button" onClick={() => void refreshTree()} className="flex items-center">
                       <RefreshCcw className="h-5 w-5" />
             </button>
           </div>
