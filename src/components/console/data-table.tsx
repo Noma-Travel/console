@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useState, useEffect } from 'react';
 
-import { replaceUUID } from '@/lib/console_utils'; // Adjust the path as necessary
+import { replaceUUID, isBlueprintTableField } from '@/lib/console_utils';
 
 
 import {
@@ -22,6 +22,8 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,8 +47,7 @@ function generateReactType(fields:any) {
   console.log('Field to be filtered (GRT)')
   console.log(fields)
 
-  // Filter out fields with layer > 0
-  const filteredFields = fields.filter((field:any) => field.layer < 1);
+  const filteredFields = fields.filter((field: any) => isBlueprintTableField(field));
   //const filteredFields = fields;
   console.log('Filtered Fields (GRT)')
   console.log(filteredFields)
@@ -297,7 +298,8 @@ interface Field {
   hint: string;
   id: string;
   label: string;
-  layer: number;
+  layer?: number | string;
+  level?: number | string;
   multilingual: boolean;
   order: number;
   required: boolean;
@@ -325,7 +327,7 @@ function generateColumnDef(fields: Field[]): any[] {
   console.log('Field to be filtered (GCD)')
   console.log(fields)
 
-  const filteredFields = fields.filter(field => field.layer <= 0);
+  const filteredFields = fields.filter((field) => isBlueprintTableField(field));
   //const filteredFields = fields;
 
   console.log('Filtered Fields (GCD)')
@@ -380,13 +382,14 @@ const tableFooter = {
 
 
 interface DataTableProps {
-  onSelectId: (id: string) => void;  
-  refresh: any;              
-  blueprint: any; 
-  portfolio: string; 
-  org: string; 
-  tool: string; 
-  ring: string;             
+  onSelectId: (id: string) => void;
+  selectedId?: string;
+  refresh: any;
+  blueprint: any;
+  portfolio: string;
+  org: string;
+  tool: string;
+  ring: string;
 }
 
 
@@ -395,7 +398,16 @@ interface DataItem {
   [key: string]: any; // Adjust this to the specific structure of your data
 }
 
-export default function DataTable({ onSelectId, refresh, blueprint, portfolio, org, tool, ring  }: DataTableProps) {
+export default function DataTable({
+  onSelectId,
+  selectedId,
+  refresh,
+  blueprint,
+  portfolio,
+  org,
+  tool,
+  ring,
+}: DataTableProps) {
 
   let columnDefs = []; 
 
@@ -410,77 +422,222 @@ export default function DataTable({ onSelectId, refresh, blueprint, portfolio, o
   type FieldsType = ReturnType<typeof generateReactType>;
 
   //const [blueprint, setBlueprint] = useState({});
-  const [data, setData] = useState<DataItem[]>([]); // State to hold table data
-  
-  const [columns, setColumns] = useState<ColumnDef<FieldsType>[]>([]); // State to hold column definitions
-  //const [columns, setColumns] = useState<ColumnDef<FieldsType>[]>([]);
-  //const [loading, setLoading] = useState(true); // State to manage loading status
+  const [data, setData] = useState<DataItem[]>([]);
+
+  const [columns, setColumns] = useState<ColumnDef<FieldsType>[]>([]);
   const [error, setError] = useState<Error | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const portfolio_id = portfolio
-  const org_id = org
-  //const tool_id = tool
-  const ring_id = ring
+  const [pageSize, setPageSize] = useState(25);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [cachedPages, setCachedPages] = useState<DataItem[][]>([]);
+  const [nextCursors, setNextCursors] = useState<(string | null)[]>([]);
 
+  const [idDraft, setIdDraft] = useState("");
+  const [contentDraft, setContentDraft] = useState("");
+  const [appliedId, setAppliedId] = useState("");
+  const [appliedContent, setAppliedContent] = useState("");
+
+  const applySearch = () => {
+    setAppliedId(idDraft.trim());
+    setAppliedContent(contentDraft.trim());
+    setCachedPages([]);
+    setNextCursors([]);
+    setPageIndex(0);
+  };
+
+  const clearSearch = () => {
+    setIdDraft("");
+    setContentDraft("");
+    setAppliedId("");
+    setAppliedContent("");
+    setCachedPages([]);
+    setNextCursors([]);
+    setPageIndex(0);
+  };
+
+  const portfolio_id = portfolio;
+  const org_id = org;
+  const ring_id = ring;
+  const listBase = `${import.meta.env.VITE_API_URL}/_data/${portfolio_id}/${org_id}/${ring_id}`;
 
   useEffect(() => {
-    // Function to fetch Data
-    const fetchData = async () => {
+    if (!blueprint?.fields?.length) return;
+    try {
+      columnDefs = generateColumnDef(blueprint.fields);
+      columnDefs.push(tableFooter);
+      setColumns(columnDefs as ColumnDef<FieldsType>[]);
+    } catch (err) {
+      if (err instanceof Error) setError(err);
+    }
+  }, [blueprint]);
+
+  useEffect(() => {
+    if (!blueprint?.fields?.length) return;
+
+    const runContentOrIdSearch = async () => {
+      setLoading(true);
       try {
-
-
-          
-        // Generate the Column Definitions
-        // Generate Column Defs
-        columnDefs = generateColumnDef(blueprint.fields);
-        // Add header to the beginning
-        //columnDefs.unshift(tableHeader); 
-        // Add footedto the end
-        columnDefs.push(tableFooter);
-        // Create Columns
-        const columnsd: ColumnDef<FieldsType>[] = columnDefs;
-        // Save columns in state
-        setColumns(columnsd);
-              
-      
-
-        // Fetch Data
-        const dataResponse = await fetch(`${import.meta.env.VITE_API_URL}/_data/${portfolio_id}/${org_id}/${ring_id}`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${sessionStorage.accessToken}`,
-          },
-        });
-        const response = await dataResponse.json();
-        setData(response['items']);
-
-
-        console.log("BLUEPRINT 222:")
-        console.log(blueprint);
-        
-        if (blueprint) {
-          const updatedData = await replaceUUID(response['items'],blueprint);
-          console.log('After UUID Replacement:')
-          console.log(updatedData);
-          setData(updatedData); // Update the state with the new data
+        if (appliedContent.trim()) {
+          const dataResponse = await fetch(listBase, {
+            method: "GET",
+            headers: { Authorization: `Bearer ${sessionStorage.accessToken}` },
+          });
+          const response = await dataResponse.json();
+          const rawItems = response["items"] ?? [];
+          let rows = await replaceUUID(rawItems, blueprint);
+          const needle = appliedContent.trim().toLowerCase();
+          rows = rows.filter((row: DataItem) =>
+            JSON.stringify(row).toLowerCase().includes(needle)
+          );
+          const idNeedle = appliedId.trim().toLowerCase();
+          if (idNeedle) {
+            rows = rows.filter((row: DataItem) =>
+              String(row._id ?? "").toLowerCase().includes(idNeedle)
+            );
+          }
+          setData(rows);
+          return;
         }
- 
 
+        if (appliedId.trim()) {
+          const q = appliedId.trim();
+          const one = await fetch(`${listBase}/${encodeURIComponent(q)}`, {
+            method: "GET",
+            headers: { Authorization: `Bearer ${sessionStorage.accessToken}` },
+          });
+          if (one.ok) {
+            const doc = await one.json();
+            const arr = Array.isArray(doc) ? doc : [doc];
+            setData(await replaceUUID(arr, blueprint));
+            return;
+          }
+
+          const qRes = await fetch(`${listBase}/_query?limit=200&sort=desc`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${sessionStorage.accessToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              operator: "begins_with",
+              value: q,
+              sort: "desc",
+            }),
+          });
+          const qJson = await qRes.json();
+          const qItems = qJson["items"] ?? [];
+          setData(await replaceUUID(qItems, blueprint));
+          return;
+        }
       } catch (err) {
-        if (err instanceof Error) {
-          setError(err);  // Now TypeScript knows `err` is of type `Error`.
-        } else {
-          setError(new Error("An unknown error occurred"));  // Handle other types
-        }
-        console.log(error)
-        
+        if (err instanceof Error) setError(err);
+        else setError(new Error("An unknown error occurred"));
       } finally {
-        //setLoading(false);
+        setLoading(false);
       }
     };
 
-    fetchData();
-  }, [blueprint,org,refresh]);
+    if (appliedId.trim() || appliedContent.trim()) {
+      void runContentOrIdSearch();
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({
+          paged: "1",
+          limit: String(pageSize),
+        });
+        const dataResponse = await fetch(`${listBase}?${params}`, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${sessionStorage.accessToken}` },
+        });
+        const response = await dataResponse.json();
+        const rawItems = response["items"] ?? [];
+        const rows = await replaceUUID(rawItems, blueprint);
+        if (cancelled) return;
+        setCachedPages([rows]);
+        setNextCursors([response["last_id"] ?? null]);
+        setPageIndex(0);
+        setData(rows);
+      } catch (err) {
+        if (!cancelled) {
+          if (err instanceof Error) setError(err);
+          else setError(new Error("An unknown error occurred"));
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    blueprint,
+    org,
+    refresh,
+    pageSize,
+    ring_id,
+    portfolio_id,
+    appliedId,
+    appliedContent,
+  ]);
+
+  useEffect(() => {
+    if (appliedId.trim() || appliedContent.trim()) return;
+    if (!cachedPages.length) return;
+    const rows = cachedPages[pageIndex];
+    if (rows) setData(rows);
+  }, [pageIndex, cachedPages, appliedId, appliedContent]);
+
+  const goNextPage = async () => {
+    if (appliedId.trim() || appliedContent.trim()) return;
+    if (pageIndex < cachedPages.length - 1) {
+      setPageIndex((i) => i + 1);
+      return;
+    }
+    const cursor = nextCursors[pageIndex];
+    if (!cursor) return;
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        paged: "1",
+        limit: String(pageSize),
+        lastkey: cursor,
+      });
+      const dataResponse = await fetch(`${listBase}?${params}`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${sessionStorage.accessToken}` },
+      });
+      const response = await dataResponse.json();
+      const rawItems = response["items"] ?? [];
+      const rows = await replaceUUID(rawItems, blueprint);
+      setCachedPages((p) => [...p, rows]);
+      setNextCursors((c) => [...c, response["last_id"] ?? null]);
+      setPageIndex((i) => i + 1);
+      setData(rows);
+    } catch (err) {
+      if (err instanceof Error) setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const goPrevPage = () => {
+    if (pageIndex > 0) setPageIndex((i) => i - 1);
+  };
+
+  const browseMode = !appliedId.trim() && !appliedContent.trim();
+  const searchDirty =
+    idDraft.trim() !== appliedId || contentDraft.trim() !== appliedContent;
+  const canGoNext =
+    browseMode &&
+    (pageIndex < cachedPages.length - 1 ||
+      Boolean(nextCursors[pageIndex]));
 
   //console.log(blueprint)
   //console.log(data)
@@ -502,9 +659,7 @@ export default function DataTable({ onSelectId, refresh, blueprint, portfolio, o
 
 
 
-  const [sorting, setSorting] = React.useState<SortingState>([
-    { id: 'account_type', desc: true },
-  ]);
+  const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
@@ -536,16 +691,97 @@ export default function DataTable({ onSelectId, refresh, blueprint, portfolio, o
 
 
   return (
-    <div className="w-full h-[calc(100vh-300px)] overflow-y-auto">
-      
-      <div>
+    <div className="flex h-full min-h-0 w-full flex-col gap-3">
+      <form
+        className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end"
+        onSubmit={(e) => {
+          e.preventDefault();
+          applySearch();
+        }}
+      >
+        <div className="grid w-full gap-1.5 sm:max-w-xs">
+          <Label htmlFor="data-id-search">ID or prefix</Label>
+          <Input
+            id="data-id-search"
+            placeholder="Exact id or prefix (index search)…"
+            value={idDraft}
+            onChange={(e) => setIdDraft(e.target.value)}
+            autoComplete="off"
+          />
+        </div>
+        <div className="grid w-full flex-1 gap-1.5 sm:min-w-[12rem]">
+          <Label htmlFor="data-content-search">Text in document</Label>
+          <Input
+            id="data-content-search"
+            placeholder="Substring in JSON (loads full list)…"
+            value={contentDraft}
+            onChange={(e) => setContentDraft(e.target.value)}
+            autoComplete="off"
+          />
+        </div>
+        <div className="flex flex-wrap items-end gap-2">
+          <Button type="submit" size="sm" disabled={loading}>
+            Search
+          </Button>
+          {(appliedId ||
+            appliedContent ||
+            idDraft ||
+            contentDraft) && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="shrink-0"
+              onClick={clearSearch}
+            >
+              Clear
+            </Button>
+          )}
+        </div>
+        <div className="flex w-full items-center gap-2 sm:ml-auto sm:w-auto">
+          <Label htmlFor="data-page-size" className="whitespace-nowrap text-muted-foreground">
+            Rows / page
+          </Label>
+          <select
+            id="data-page-size"
+            className="h-9 rounded-md border border-input bg-background px-2 text-sm shadow-sm"
+            value={pageSize}
+            disabled={!browseMode}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value));
+              setPageIndex(0);
+              setCachedPages([]);
+              setNextCursors([]);
+            }}
+          >
+            {[10, 25, 50, 100].map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
+        </div>
+      </form>
+      {searchDirty && (
+        <p className="text-xs text-amber-600 dark:text-amber-500">
+          Click Search to run the query.
+        </p>
+      )}
+      {loading && (
+        <p className="text-sm text-muted-foreground">Loading…</p>
+      )}
+      {error && (
+        <p className="text-sm text-destructive">{error.message}</p>
+      )}
+
+      <div className="min-h-0 flex-1 overflow-auto rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}> 
+                    <TableHead key={header.id}>
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -553,7 +789,7 @@ export default function DataTable({ onSelectId, refresh, blueprint, portfolio, o
                             header.getContext()
                           )}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
@@ -564,6 +800,11 @@ export default function DataTable({ onSelectId, refresh, blueprint, portfolio, o
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className={
+                    selectedId && row.original._id === selectedId
+                      ? "bg-muted/80"
+                      : "cursor-pointer"
+                  }
                   onClick={() => onSelectId(row.original._id)}
                 >
                   {row.getVisibleCells().map((cell) => (
@@ -579,7 +820,7 @@ export default function DataTable({ onSelectId, refresh, blueprint, portfolio, o
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={Math.max(columns.length, 1)}
                   className="h-24 text-center"
                 >
                   No results.
@@ -589,32 +830,48 @@ export default function DataTable({ onSelectId, refresh, blueprint, portfolio, o
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
-        <div className="space-x-2">
+
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-2">
+        <p className="text-sm text-muted-foreground">
+          {browseMode ? (
+            <>
+              Page {pageIndex + 1} · {data.length} row(s) on this page
+              {!nextCursors[pageIndex] && data.length > 0
+                ? " · no further pages"
+                : ""}
+            </>
+          ) : (
+            <>
+              {data.length} match(es)
+              {appliedContent.trim()
+                ? " · full list scan"
+                : appliedId.trim()
+                  ? " · id search"
+                  : ""}
+            </>
+          )}
+        </p>
+        <div className="flex gap-2">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
+            onClick={goPrevPage}
+            disabled={!browseMode || pageIndex === 0 || loading}
           >
             Previous
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
+            onClick={() => void goNextPage()}
+            disabled={!browseMode || !canGoNext || loading}
           >
             Next
           </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 

@@ -57,9 +57,24 @@ export default function ChatWidgetPlanPreview({ item }: PlanPreviewProps) {
   const planData = first?.plan ?? null
   const actualPlan = Array.isArray(planData) ? planData[0] : planData
 
-  if (!actualPlan || !actualPlan.steps || actualPlan.steps.length === 0) {
+  if (!actualPlan) {
+    return null
+  }
+
+  if (!actualPlan.steps || actualPlan.steps.length === 0) {
     return (
-      <></>
+      <div className="w-[80%] mx-auto p-4 rounded-lg border bg-card">
+        <div className="mb-3 pb-2 border-b">
+          <h3 className="text-xs font-semibold text-card-foreground">Plan Preview</h3>
+          {actualPlan.id && (
+            <p className="text-xs text-muted-foreground mt-1">Plan id: {actualPlan.id}</p>
+          )}
+          {actualPlan.meta?.strategy && (
+            <p className="text-xs text-muted-foreground">Strategy: {actualPlan.meta.strategy}</p>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground">No steps in this plan.</p>
+      </div>
     )
   }
 

@@ -9,10 +9,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const mode = process.env.NODE_ENV || "development";
 const env = loadEnv(mode, __dirname, "");
 
-// Get bootstrap extensions from environment
-const bootstrapExtensions = 
-  env.VITE_EXTENSIONS || 
-  "data,schd,backend"; // fallback when .env omit (UI extension folder is `backend`)
+// Get bootstrap extensions from environment (VITE_EXTENSIONS is canonical; VITE_BOOTSTRAP_PLUGINS kept for compatibility)
+const bootstrapExtensions =
+  env.VITE_EXTENSIONS ||
+  env.VITE_BOOTSTRAP_PLUGINS ||
+  "data,schd"; // fallback default
 
 // Parse the extensions list
 const extensions = bootstrapExtensions
