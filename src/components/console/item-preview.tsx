@@ -22,11 +22,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useState, useEffect, useMemo, type ReactNode } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { cn } from "@/lib/utils";
 
 import DialogPut from '@/components/console/dialog-put'
 import ImagePreview from "@/components/console/image-preview"
+import { formatBlueprintFieldValue } from "@/lib/blueprint-field-display"
 import { getBlueprintIndexPathFieldSet, resolveDocumentTitle } from "@/lib/console_utils"
 
 
@@ -60,46 +61,6 @@ interface BlueprintField {
   widget?: string;
   hint?: string;
   label?: string;
-}
-
-function formatDetailValue(
-  value: unknown,
-  key: string,
-  blueprint?: ItemPreviewProps["blueprint"],
-): ReactNode {
-  if (value === undefined) {
-    return <span className="text-muted-foreground">—</span>;
-  }
-  if (value !== null && typeof value === "object") {
-    return (
-      <pre className="max-h-56 overflow-auto rounded-md border bg-muted/40 p-2.5 font-mono text-xs leading-relaxed whitespace-pre-wrap break-all [overflow-wrap:anywhere]">
-        {JSON.stringify(value, null, 2)}
-      </pre>
-    );
-  }
-
-  const resolved =
-    blueprint?.rich?.[blueprint.sources?.[key]?.split(":")[0]]?.[value as string] ??
-    value;
-
-  const text = String(resolved);
-  const trim = text.trim();
-  const looksLikeJson =
-    (trim.startsWith("{") && trim.endsWith("}")) ||
-    (trim.startsWith("[") && trim.endsWith("]"));
-  const isLong = text.length > 200;
-
-  if (looksLikeJson || isLong) {
-    return (
-      <pre className="max-h-56 overflow-auto rounded-md border bg-muted/40 p-2.5 font-mono text-xs leading-relaxed whitespace-pre-wrap break-all [overflow-wrap:anywhere]">
-        {text}
-      </pre>
-    );
-  }
-
-  return (
-    <span className="break-words [overflow-wrap:anywhere]">{text}</span>
-  );
 }
 
 export default function ItemPreview({selectedId,refreshUp,onDeleteId,blueprint,portfolio,org,ring}: ItemPreviewProps) {
@@ -334,7 +295,7 @@ export default function ItemPreview({selectedId,refreshUp,onDeleteId,blueprint,p
                                       isIndexKey && "text-muted-foreground",
                                     )}
                                   >
-                                    {formatDetailValue(value, key, blueprint)}
+                                    {formatBlueprintFieldValue(value, key, blueprint)}
                                     {isIndexKey && (
                                       <p className="mt-2 text-xs leading-snug text-muted-foreground">
                                         Index key: this value is part of{" "}
