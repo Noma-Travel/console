@@ -32,6 +32,40 @@ export function isBlueprintTableField(field: { layer?: unknown; level?: unknown 
     return fieldLayer(field) <= 0;
 }
 
+/**
+ * Normalize API values that may be JSON objects/arrays or a JSON/Python-ish string.
+ * Used for blueprint fields stored as textarea (e.g. hooks, slots) when the backend returns parsed JSON.
+ */
+export function parseStructuredFieldJson(input: unknown): unknown {
+    if (input === null || input === undefined) {
+        return null;
+    }
+    if (typeof input === "object") {
+        return input;
+    }
+    if (typeof input !== "string") {
+        return null;
+    }
+    const s = input.trim();
+    if (!s) {
+        return null;
+    }
+    try {
+        return JSON.parse(s);
+    } catch {
+        try {
+            const jsonString = s
+                .replace(/'/g, '"')
+                .replace(/True/g, "true")
+                .replace(/False/g, "false")
+                .replace(/None/g, "null");
+            return JSON.parse(jsonString);
+        } catch {
+            return null;
+        }
+    }
+}
+
 // Declare the Blueprint interface
 export interface Blueprint {
     label: string;
